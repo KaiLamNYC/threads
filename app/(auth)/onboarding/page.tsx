@@ -2,7 +2,7 @@ import AccountProfile from "@/components/forms/AccountProfile";
 import { currentUser } from "@clerk/nextjs";
 
 async function Page() {
-	//CLERK FUNCTION
+	//CLERK FUNCTION TO GET CURRENT USER INFORMATION
 	const user = await currentUser();
 
 	//HOLDING USER INFO FROM CLERK DB
