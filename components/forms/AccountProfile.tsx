@@ -21,9 +21,11 @@ import * as z from "zod";
 //HANDLES FORM FUNCTIONALITY/SUBMIT
 import { useForm } from "react-hook-form";
 
+import { updateUser } from "@/lib/actions/user.actions";
 import { useUploadThing } from "@/lib/uploadthing";
 import { isBase64Image } from "@/lib/utils";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
 
 interface Props {
@@ -42,7 +44,11 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 	//HANDLING THE PROFILE IMAGE UPLOAD FILE
 	const [files, setFiles] = useState<File[]>([]);
 
+	//UPLOADTHING FUNCTION
 	const { startUpload } = useUploadThing("media");
+
+	const router = useRouter();
+	const pathname = usePathname();
 
 	const form = useForm({
 		resolver: zodResolver(UserValidation),
@@ -91,14 +97,15 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 		}
 	};
 
-	const onSubmit = async function (values: z.infer<typeof UserValidation>) {
+	const onSubmit = async (values: z.infer<typeof UserValidation>) => {
 		//VALUE FROM INPUT FIELD;
 		const blob = values.profile_photo;
 
 		//IF USER UPLOADED THEIR OWN PHOTO NOT FROM GOOGLE/GITHUB
 		const hasImageChanged = isBase64Image(blob);
 
-		//UPLOADING THE NEW IMAGE TO OUR DB
+		//UPLOADING THE NEW IMAGE TO UPLOADTHING TO HOST
+		//THEN GRABBING FILEURL TO SAVE INTO OUR MONGODB
 		if (hasImageChanged) {
 			const imgRes = await startUpload(files);
 			if (imgRes && imgRes[0].fileUrl) {
@@ -106,7 +113,23 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 				values.profile_photo = imgRes[0].fileUrl;
 			}
 		}
-		//BACKEND FUNCTION TO SUBMIT FORM
+		//COMING FROM USER ACTIONS
+		await updateUser({
+			username: values.username,
+			name: values.name,
+			bio: values.bio,
+			image: values.profile_photo,
+			//USER.ID COMING FROM CLERK
+			userId: user.id,
+			path: pathname,
+		});
+
+		if (pathname === "/profile/edit") {
+			router.back();
+		} else {
+			//IF COMING FROM ONBOARDING THEN CONTINUE TO HOME
+			router.push("/");
+		}
 	};
 
 	return (
@@ -149,6 +172,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 									onChange={(e) => handleImage(e, field.onChange)}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -167,6 +191,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 									{...field}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -185,6 +210,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 									{...field}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>
@@ -204,6 +230,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 									{...field}
 								/>
 							</FormControl>
+							<FormMessage />
 						</FormItem>
 					)}
 				/>

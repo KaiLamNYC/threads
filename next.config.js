@@ -3,6 +3,8 @@ const nextConfig = {
 	experimental: {
 		serverActions: true,
 		serverComponentsExternalPackages: ["mongoose"],
+		//HAD TO INCREASE REQ BODY LIMIT
+		serverActionsBodySizeLimit: "10mb",
 	},
 	images: {
 		remotePatterns: [
