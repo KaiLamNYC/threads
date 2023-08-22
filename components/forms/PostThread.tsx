@@ -18,7 +18,6 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 
 import { createThread } from "@/lib/actions/thread.actions";
-import { getRandomValues } from "crypto";
 import { usePathname, useRouter } from "next/navigation";
 
 interface Props {

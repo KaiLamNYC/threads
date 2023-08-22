@@ -80,3 +80,75 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
 	//RETURNING ALL THREADS + BOOLEAN
 	return { threads, isNext };
 }
+
+export async function fetchThreadsById(id: string) {
+	connectToDB();
+	try {
+		//POPULATE COMMUNITY MODEL
+		const thread = await Thread.findById(id)
+			.populate({
+				path: "author",
+				model: User,
+				select: "_id id name image",
+			})
+			.populate({
+				//COMMENTS AND USER INFO FOR COMMENTS
+				path: "children",
+				//ARRAY OF THE AUTHOR AND THE THREAD
+				populate: [
+					{
+						path: "author",
+						model: "User",
+						select: "_id id name parentId image",
+					},
+					{
+						path: "children",
+						model: "Thread",
+						//GRABBING THE REPLIES ON THE COMMENTS WITHIN THE PARENT THREAD
+						populate: {
+							path: "author",
+							model: User,
+							select: "_id id name parentId image",
+						},
+					},
+				],
+			})
+			.exec();
+		return thread;
+	} catch (e: any) {
+		throw new Error(`Could not find thread ${e}`);
+	}
+}
+
+export async function addCommentToThread(
+	threadId: string,
+	commentText: string,
+	userId: string,
+	path: string
+) {
+	connectToDB();
+	try {
+		const originalThread = await Thread.findById(threadId);
+		if (!originalThread) {
+			throw new Error("Thread not found");
+		}
+
+		const commentThread = new Thread({
+			text: commentText,
+			author: userId,
+			parentId: threadId,
+		});
+
+		const savedCommentThread = await commentThread.save();
+
+		//adding comment to parent thread
+		originalThread.children.push(savedCommentThread._id);
+
+		await originalThread.save();
+
+		//DONT NEED TO ADD TO USER DOC BECAUSE ITS A COMMENT NOT A PARENT THREAD
+		//UNLESS WANT TO TRACK COMMENTS FOR SOME REASON
+	} catch (e) {
+		throw new Error(`Could not comment on thread${e}`);
+	}
+}
