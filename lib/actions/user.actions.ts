@@ -117,6 +117,7 @@ export async function fetchUsers({
 		//GRABBING ALL USERS EXCEPT CURRENT USER FOR SEARCH
 		const query: FilterQuery<typeof User> = {
 			// https://www.mongodb.com/docs/manual/reference/operator/query/ne/
+			//THIS IS CLERK ID NOT MONGOID. BASICALLY SAME THING SINCE ONLY FILTERING
 			id: { $ne: userId },
 		};
 
@@ -145,5 +146,35 @@ export async function fetchUsers({
 		return { users, isNext };
 	} catch (err: any) {
 		throw new Error(`failed to fetch users: ${err.message}`);
+	}
+}
+
+export async function getActivity(userId: string) {
+	try {
+		connectToDB();
+
+		//GRABBING ALL USER THREADS
+		const userThreads = await Thread.find({ author: userId });
+
+		//GRABBING ALL COMMENTS ON USERS THREADS
+		//ITERATING OVER ALL THREADS AND CONCATING CHILDRENID TO ACCUMULATOR ARRAY
+		const childThreadIds = userThreads.reduce((acc: any, userThread: any) => {
+			return acc.concat(userThread.children);
+		}, []);
+
+		//USING CHILDTHREADIDS ABOVE TO GRAB ALL OF THE ACTUAL COMMENTS EXCLUDING COMMENTS MADE BY CURRENTUSER
+		const replies = await Thread.find({
+			_id: { $in: childThreadIds },
+			author: { $ne: userId },
+		}).populate({
+			path: "author",
+			model: User,
+			select: "name image _id",
+		});
+
+		//RETURNING ALL REPLIES/COMMENTS MADE ON ALL USERS POSTS
+		return replies;
+	} catch (err: any) {
+		throw new Error(`failed to get users activity: ${err.message}`);
 	}
 }
