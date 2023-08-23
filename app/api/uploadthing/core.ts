@@ -1,3 +1,5 @@
+//EVERYTHING TAKEN FROM UPLOADTHING DOCS
+
 import { currentUser } from "@clerk/nextjs";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 
