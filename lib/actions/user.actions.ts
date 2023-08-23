@@ -91,3 +91,59 @@ export async function fetchUserThreads(userId: string) {
 		throw new Error(`Failed to fetch user posts: ${err.message}`);
 	}
 }
+
+export async function fetchUsers({
+	userId,
+	searchString = "",
+	pageNumber = 1,
+	pageSize = 20,
+	sortBy = "desc",
+}: {
+	userId: string;
+	searchString?: string;
+	pageNumber?: number;
+	pageSize?: number;
+	//MONGOOSE TYPE SORTORDER NODE_MODULES/MONGOOSE/TYPES/INDEX.TS/LINE 580
+	sortBy?: SortOrder;
+}) {
+	try {
+		connectToDB();
+
+		//PAGINATION STUFF FOR SEARCH RESULTS
+		const skipAmount = (pageNumber - 1) * pageSize;
+
+		const regex = new RegExp(searchString, "i");
+
+		//GRABBING ALL USERS EXCEPT CURRENT USER FOR SEARCH
+		const query: FilterQuery<typeof User> = {
+			// https://www.mongodb.com/docs/manual/reference/operator/query/ne/
+			id: { $ne: userId },
+		};
+
+		if (searchString.trim() !== "") {
+			// https://www.mongodb.com/docs/manual/reference/operator/query/or/
+			query.$or = [
+				{ username: { $regex: regex } },
+				{ name: { $regex: regex } },
+			];
+		}
+
+		const sortOptions = { createdAt: sortBy };
+
+		//PERFORMING THE QUERY WITH ALL THE OPTIONS BELOW
+		//SEARCHING BY USERID, USERNAME OR NAME AS WRITTEB ABOVE
+		const usersQuery = User.find(query)
+			.sort(sortOptions)
+			.skip(skipAmount)
+			.limit(pageSize);
+
+		const totalUsersCount = await User.countDocuments(query);
+
+		const users = await usersQuery.exec();
+
+		const isNext = totalUsersCount > skipAmount + users.length;
+		return { users, isNext };
+	} catch (err: any) {
+		throw new Error(`failed to fetch users: ${err.message}`);
+	}
+}
