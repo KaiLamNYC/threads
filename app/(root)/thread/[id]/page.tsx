@@ -49,7 +49,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 						createdAt={childItem.createdAt}
 						comments={childItem.children}
 						//INDICATING ITS A COMMENT
-						isComment={true}
+						isComment
 					/>
 				))}
 			</div>
