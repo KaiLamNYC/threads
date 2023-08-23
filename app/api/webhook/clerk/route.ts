@@ -3,8 +3,6 @@
 //USER CREATES ORG USING CLERK, CLERK SENDS WEBHOOK WITH INFO TO OUR ENDPOINT, SVIX VERIFIES THE REQ MAKES SURE COMING FROM CLERK AND NOT MAL, PARSE DATA AND SAVE TO DB
 //CAN ALSO USE FOR SIGNUP INSTEAD OF ONBOARDING
 
-//https://clerk.com/docs/users/sync-data-to-your-backend
-
 /* eslint-disable camelcase */
 // Resource: https://clerk.com/docs/users/sync-data-to-your-backend
 // Above article shows why we need webhooks i.e., to sync data to our backend
@@ -23,7 +21,8 @@ import {
 	removeUserFromCommunity,
 	updateCommunityInfo,
 } from "@/lib/actions/community.actions";
-import { NextResponse } from "next/server";
+import { NextResponse } from "@/node_modules/next/server";
+// import { NextResponse } from "next/server";
 
 // Resource: https://clerk.com/docs/integration/webhooks#supported-events
 // Above document lists the supported events
