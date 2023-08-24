@@ -1,8 +1,6 @@
 # Threads Clone Project
 
-A web application that replicates the functionality of Threads - a platform for engaging discussions and conversations.
-
-
+A web application that replicates the functionality of [insert original threads platform name] - a platform for engaging discussions and conversations.
 
 ## Table of Contents
 
@@ -12,8 +10,6 @@ A web application that replicates the functionality of Threads - a platform for 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -35,7 +31,7 @@ A web application that replicates the functionality of Threads - a platform for 
 
 ## Demo
 
-You can check out a live demo of the application [here](insert-demo-link](https://threads-3q422conx-kailamnyc.vercel.app/).
+You can check out a live demo of the application [here](insert-demo-link).
 
 ## Getting Started
 
@@ -56,6 +52,33 @@ Before you begin, ensure you have met the following requirements:
    ```sh
    git clone https://github.com/yourusername/threads-clone.git
    cd threads-clone
-```
+   ```
 
+2. Install the project dependencies:
 
+   ```sh
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Configure the environment variables by creating a .env file in the project root directory. You can use .env.example as a template:
+
+4. Start the development server:
+
+   ```sh
+   npm run start
+   # or
+   yarn start
+   ```
+
+5. Open your web browser and visit http://localhost:3000 to see the app running locally.
+
+## Usage
+
+- Register for an account or log in if you already have one.
+- Explore and participate in threads and discussions.
+- Create your own threads and start conversations.
+- Upvote or downvote threads and comments.
+- Customize your profile and notification settings.
+- Create and manage organizations (if applicable).
