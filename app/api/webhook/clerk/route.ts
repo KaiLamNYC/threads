@@ -1,8 +1,3 @@
-//SINCE ORGANIZTIONS IS COMING FROM CLERK WE NEED TO SET UP WEBHOOK EVENTS
-//WEBHOOK LETS US SYNC CLERK TO DB BY SENDING REQ TO OUR ENDPOINT WITH ALL OF THE USER ACTIONS
-//USER CREATES ORG USING CLERK, CLERK SENDS WEBHOOK WITH INFO TO OUR ENDPOINT, SVIX VERIFIES THE REQ MAKES SURE COMING FROM CLERK AND NOT MAL, PARSE DATA AND SAVE TO DB
-//CAN ALSO USE FOR SIGNUP INSTEAD OF ONBOARDING
-
 /* eslint-disable camelcase */
 // Resource: https://clerk.com/docs/users/sync-data-to-your-backend
 // Above article shows why we need webhooks i.e., to sync data to our backend
@@ -21,8 +16,7 @@ import {
 	removeUserFromCommunity,
 	updateCommunityInfo,
 } from "@/lib/actions/community.actions";
-import { NextResponse } from "@/node_modules/next/server";
-// import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 // Resource: https://clerk.com/docs/integration/webhooks#supported-events
 // Above document lists the supported events

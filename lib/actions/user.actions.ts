@@ -1,12 +1,27 @@
 "use server";
+// https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions
 
-import { revalidatePath } from "@/node_modules/next/cache";
 import { FilterQuery, SortOrder } from "mongoose";
+import { revalidatePath } from "next/cache";
+
+import Community from "../models/community.model";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
+
 import { connectToDB } from "../mongoose";
 
-// https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions
+export async function fetchUser(userId: string) {
+	try {
+		connectToDB();
+
+		return await User.findOne({ id: userId }).populate({
+			path: "communities",
+			model: Community,
+		});
+	} catch (error: any) {
+		throw new Error(`Failed to fetch user: ${error.message}`);
+	}
+}
 
 interface Params {
 	userId: string;
@@ -19,14 +34,13 @@ interface Params {
 
 export async function updateUser({
 	userId,
-	username,
-	name,
 	bio,
-	image,
+	name,
 	path,
+	username,
+	image,
 }: Params): Promise<void> {
 	try {
-		//CONNECTING TO DB
 		connectToDB();
 
 		await User.findOneAndUpdate(
@@ -38,61 +52,50 @@ export async function updateUser({
 				image,
 				onboarded: true,
 			},
-			//UPDATE AND INSERT
 			{ upsert: true }
 		);
 
-		// https://nextjs.org/docs/app/api-reference/functions/revalidatePath
-		// CHECKING WHERE THE REQUEST CAME FROM TO REDIRECT LATER
 		if (path === "/profile/edit") {
 			revalidatePath(path);
 		}
-	} catch (err: any) {
-		throw new Error(`failed to create/update user: ${err.message}`);
+	} catch (error: any) {
+		throw new Error(`Failed to create/update user: ${error.message}`);
 	}
 }
 
-export async function fetchUser(userId: string) {
+export async function fetchUserPosts(userId: string) {
 	try {
 		connectToDB();
 
-		return await User.findOne({ id: userId });
-
-		//GRABBING THE USERS REF
-		// .populate({
-		// 	path: "communities",
-		// 	model: Community,
-		// });
-	} catch (err: any) {
-		throw new Error(`failed to fetch user: ${err.message}`);
-	}
-}
-
-export async function fetchUserThreads(userId: string) {
-	try {
-		connectToDB();
-		//GRABBING THE THREADS. NEED TO ADD COMMUNITIES LATER
+		// Find all threads authored by the user with the given userId
 		const threads = await User.findOne({ id: userId }).populate({
 			path: "threads",
 			model: Thread,
-			//GRABBING COMMENTS ON THE THREAD AND THEIR AUTHORS
-			populate: {
-				path: "children",
-				model: "Thread",
-				populate: {
-					path: "author",
-					model: "User",
-					select: "name image id",
+			populate: [
+				{
+					path: "community",
+					model: Community,
+					select: "name id image _id", // Select the "name" and "_id" fields from the "Community" model
 				},
-			},
+				{
+					path: "children",
+					model: Thread,
+					populate: {
+						path: "author",
+						model: User,
+						select: "name image id", // Select the "name" and "_id" fields from the "User" model
+					},
+				},
+			],
 		});
-
 		return threads;
-	} catch (err: any) {
-		throw new Error(`Failed to fetch user posts: ${err.message}`);
+	} catch (error) {
+		console.error("Error fetching user threads:", error);
+		throw error;
 	}
 }
 
+// Almost similar to Thead (search + pagination) and Community (search + pagination)
 export async function fetchUsers({
 	userId,
 	searchString = "",
@@ -104,49 +107,50 @@ export async function fetchUsers({
 	searchString?: string;
 	pageNumber?: number;
 	pageSize?: number;
-	//MONGOOSE TYPE SORTORDER NODE_MODULES/MONGOOSE/TYPES/INDEX.TS/LINE 580
 	sortBy?: SortOrder;
 }) {
 	try {
 		connectToDB();
 
-		//PAGINATION STUFF FOR SEARCH RESULTS
+		// Calculate the number of users to skip based on the page number and page size.
 		const skipAmount = (pageNumber - 1) * pageSize;
 
+		// Create a case-insensitive regular expression for the provided search string.
 		const regex = new RegExp(searchString, "i");
 
-		//GRABBING ALL USERS EXCEPT CURRENT USER FOR SEARCH
+		// Create an initial query object to filter users.
 		const query: FilterQuery<typeof User> = {
-			// https://www.mongodb.com/docs/manual/reference/operator/query/ne/
-			//THIS IS CLERK ID NOT MONGOID. BASICALLY SAME THING SINCE ONLY FILTERING
-			id: { $ne: userId },
+			id: { $ne: userId }, // Exclude the current user from the results.
 		};
 
+		// If the search string is not empty, add the $or operator to match either username or name fields.
 		if (searchString.trim() !== "") {
-			// https://www.mongodb.com/docs/manual/reference/operator/query/or/
 			query.$or = [
 				{ username: { $regex: regex } },
 				{ name: { $regex: regex } },
 			];
 		}
 
+		// Define the sort options for the fetched users based on createdAt field and provided sort order.
 		const sortOptions = { createdAt: sortBy };
 
-		//PERFORMING THE QUERY WITH ALL THE OPTIONS BELOW
-		//SEARCHING BY USERID, USERNAME OR NAME AS WRITTEB ABOVE
 		const usersQuery = User.find(query)
 			.sort(sortOptions)
 			.skip(skipAmount)
 			.limit(pageSize);
 
+		// Count the total number of users that match the search criteria (without pagination).
 		const totalUsersCount = await User.countDocuments(query);
 
 		const users = await usersQuery.exec();
 
+		// Check if there are more users beyond the current page.
 		const isNext = totalUsersCount > skipAmount + users.length;
+
 		return { users, isNext };
-	} catch (err: any) {
-		throw new Error(`failed to fetch users: ${err.message}`);
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
 	}
 }
 
@@ -154,28 +158,27 @@ export async function getActivity(userId: string) {
 	try {
 		connectToDB();
 
-		//GRABBING ALL USER THREADS
+		// Find all threads created by the user
 		const userThreads = await Thread.find({ author: userId });
 
-		//GRABBING ALL COMMENTS ON USERS THREADS
-		//ITERATING OVER ALL THREADS AND CONCATING CHILDRENID TO ACCUMULATOR ARRAY
-		const childThreadIds = userThreads.reduce((acc: any, userThread: any) => {
+		// Collect all the child thread ids (replies) from the 'children' field of each user thread
+		const childThreadIds = userThreads.reduce((acc, userThread) => {
 			return acc.concat(userThread.children);
 		}, []);
 
-		//USING CHILDTHREADIDS ABOVE TO GRAB ALL OF THE ACTUAL COMMENTS EXCLUDING COMMENTS MADE BY CURRENTUSER
+		// Find and return the child threads (replies) excluding the ones created by the same user
 		const replies = await Thread.find({
 			_id: { $in: childThreadIds },
-			author: { $ne: userId },
+			author: { $ne: userId }, // Exclude threads authored by the same user
 		}).populate({
 			path: "author",
 			model: User,
 			select: "name image _id",
 		});
 
-		//RETURNING ALL REPLIES/COMMENTS MADE ON ALL USERS POSTS
 		return replies;
-	} catch (err: any) {
-		throw new Error(`failed to get users activity: ${err.message}`);
+	} catch (error) {
+		console.error("Error fetching replies: ", error);
+		throw error;
 	}
 }
