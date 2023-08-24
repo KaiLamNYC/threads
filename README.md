@@ -20,11 +20,11 @@ A web application that replicates the functionality of Threads - a platform for 
 - Commenting on threads
 - User profiles
 - Notifications
-- Creating and managing organizations
+- Creating and managing communities
+- Search users and communities
 
 ### Upcoming Features
 
-- Search functionality
 - Favoriting threads
 - Reposting threads
 - Tagging users in threads
