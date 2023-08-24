@@ -31,7 +31,7 @@ A web application that replicates the functionality of Threads - a platform for 
 
 ## Demo
 
-You can check out a live demo of the application [here](https://threads-donx35sd6-kailamnyc.vercel.app/).
+You can check out a live demo of the application [here](https://threads-lofgkwfpu-kailamnyc.vercel.app/).
 
 ## Getting Started
 
