@@ -1,6 +1,6 @@
 # Threads Clone Project
 
-A web application that replicates the functionality of [insert original threads platform name] - a platform for engaging discussions and conversations.
+A web application that replicates the functionality of Threads - a platform for engaging discussions and conversations.
 
 ## Table of Contents
 
@@ -31,7 +31,7 @@ A web application that replicates the functionality of [insert original threads 
 
 ## Demo
 
-You can check out a live demo of the application [here](insert-demo-link).
+You can check out a live demo of the application [here](https://threads-donx35sd6-kailamnyc.vercel.app/).
 
 ## Getting Started
 
@@ -50,7 +50,7 @@ Before you begin, ensure you have met the following requirements:
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/yourusername/threads-clone.git
+   git clone https://github.com/KaiLamNYC/threads.git
    cd threads-clone
    ```
 
