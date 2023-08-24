@@ -1,6 +1,7 @@
 import { formatDateString } from "@/lib/utils";
 import Image from "@/node_modules/next/image";
 import Link from "@/node_modules/next/link";
+// import { useRouter } from "next/navigation";
 
 interface Props {
 	id: string;
@@ -37,6 +38,7 @@ const ThreadCard = ({
 	comments,
 	isComment,
 }: Props) => {
+	// const router = useRouter();
 	return (
 		<article
 			//MODIFYING CSS IF ISCOMMENT
@@ -96,6 +98,7 @@ const ThreadCard = ({
 									width={24}
 									height={24}
 									className='cursor-pointer object-contain'
+									//NEED TO GET CURRENT URL
 								/>
 							</div>
 							{isComment && comments.length > 0 && (
