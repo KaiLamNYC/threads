@@ -101,7 +101,8 @@ const ThreadCard = ({
 									//NEED TO GET CURRENT URL
 								/>
 							</div>
-							{isComment && comments.length > 0 && (
+							{/* {console.log(`comments ${comments.length}`)} */}
+							{!isComment && comments.length > 0 && (
 								<Link href={`/thread/${id}`}>
 									<p className='mt-1 text-subtle-medium text-gray-1'>
 										{comments.length} replies
@@ -115,6 +116,7 @@ const ThreadCard = ({
 				{/* SHOW COMMENT LOGOS */}
 				{/* NOT A COMMENT AND HAS ORGANIZATION */}
 			</div>
+
 			{!isComment && community && (
 				<Link
 					href={`/communities/${community.id}`}
