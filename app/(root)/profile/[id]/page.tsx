@@ -5,7 +5,6 @@ import { profileTabs } from "@/constants";
 import { fetchUser } from "@/lib/actions/user.actions";
 import Image from "@/node_modules/next/image";
 import { currentUser } from "@clerk/nextjs";
-import { profile } from "console";
 import { redirect } from "next/navigation";
 
 async function Page({ params }: { params: { id: string } }) {
